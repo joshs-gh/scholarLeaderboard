@@ -1,56 +1,115 @@
+import "@progress/kendo-theme-bootstrap/dist/all.css";
 import "./App.css";
 import { useMoralis } from "react-moralis";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
+import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
+import { Input } from "@progress/kendo-react-inputs";
 
 function App() {
   const { authenticate, isAuthenticated, user } = useMoralis();
   const [scholarArray, setScholarArray] = useState([]);
+  const [visibleDialog, setVisibleDialog] = useState(false);
+  const name = useRef(null);
+  const ronin = useRef(null);
 
-  const setData = () => {
-    user.set("scholarArray", [
-      {
-        name: "Bob",
-        ronin: "ronin:328492308493028439243902",
-      },
-    ]);
-    user.save();
-    console.log(user.get("scholarArray"));
+  useEffect(() => {
+    if (user) {
+      let scholars = user.get("scholarArray");
+      setScholarArray(scholars);
+    }
+  }, [user]);
+
+  const toggleDialog = () => {
+    setVisibleDialog(!visibleDialog);
   };
-
-  const addData = () => {
-    user.addUnique("scholarArray", {
-      name: "Pam",
-      ronin: "ronin:7897987897878",
-    });
+  const addScholar = () => {
+    let scholar = {
+      name: name.current.state.value,
+      ronin: ronin.current.state.value,
+    };
+    console.log(scholar);
+    setScholarArray([...scholarArray, scholar]);
+    user.add("scholarArray", scholar);
     user.save();
-    console.log(user.get("scholarArray"));
-  };
-
-  const delData = () => {
-    user.remove("scholarArray", {
-      name: "Pam",
-      ronin: "ronin:7897987897878",
-    });
-    user.save();
-    console.log(user.get("scholarArray"));
+    toggleDialog();
   };
 
   if (!isAuthenticated) {
     return (
       <div>
-        <button onClick={() => authenticate()}>Authenticate</button>
+        <button onClick={() => authenticate()}>
+          Authenticate with Metamask
+        </button>
       </div>
     );
   }
 
   return (
     <div>
-      <h1>Welcome {user.get("username")}</h1>
-      <button onClick={() => setData()}>Set Data</button>
-      <button onClick={() => addData()}>Add Data</button>
-      <button onClick={() => delData()}>Delete Data</button>
+      {scholarArray.map((s, id) => (
+        <div key={id}>
+          {s.name}
+          {s.ronin}
+          <p />
+        </div>
+      ))}
+      <button onClick={() => setVisibleDialog(!visibleDialog)}>
+        Add a Scholar
+      </button>
+      {visibleDialog && (
+        <Dialog title={"Add Scholar"} onClose={toggleDialog}>
+          <p
+            style={{
+              margin: "25px",
+              textAlign: "center",
+            }}
+          >
+            Enter Scholar Info:{" "}
+          </p>
+          <Input placeholder="Name" ref={name} />
+          <p />
+          <Input placeholder="Ronin Wallet" ref={ronin} />
+          <DialogActionsBar>
+            <button className="k-button" onClick={addScholar}>
+              Save
+            </button>
+            <button className="k-button" onClick={toggleDialog}>
+              Cancel
+            </button>
+          </DialogActionsBar>
+        </Dialog>
+      )}
     </div>
   );
 }
 
 export default App;
+
+// const setData = () => {
+//   user.set("scholarArray", [
+//     {
+//       name: "Bob",
+//       ronin: "ronin:328492308493028439243902",
+//     },
+//   ]);
+//   user.save();
+//   console.log(user.get("scholarArray"));
+// };
+
+// const addData = () => {
+//   user.addUnique("scholarArray", {
+//     name: "Pam",
+//     ronin: "ronin:7897987897878",
+//   });
+//   user.save();
+//   console.log(user.get("scholarArray"));
+// };
+
+// const delData = () => {
+//   user.remove("scholarArray", {
+//     name: "Pam",
+//     ronin: "ronin:7897987897878",
+//   });
+//   user.save();
+//   console.log(user.get("scholarArray"));
+// };
