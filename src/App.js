@@ -6,7 +6,9 @@ import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Input } from "@progress/kendo-react-inputs";
 
 function App() {
-  const { authenticate, isAuthenticated, user } = useMoralis();
+  const SLPAPI = "https://api.lunaciaproxy.cloud/_earnings/";
+  const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
+    useMoralis();
   const [scholarArray, setScholarArray] = useState([]);
   const [visibleDialog, setVisibleDialog] = useState(false);
   const name = useRef(null);
@@ -15,6 +17,12 @@ function App() {
   useEffect(() => {
     if (user) {
       let scholars = user.get("scholarArray");
+      console.log("SCHOLARS: ", scholars);
+      scholars.forEach((s) => {
+        fetch(`${SLPAPI}${s.ronin}`)
+          .then((response) => response.json())
+          .then((data) => console.log(data));
+      });
       setScholarArray(scholars);
     }
   }, [user]);
@@ -55,6 +63,9 @@ function App() {
       ))}
       <button onClick={() => setVisibleDialog(!visibleDialog)}>
         Add a Scholar
+      </button>
+      <button onClick={() => logout()} disabled={isAuthenticating}>
+        Logout
       </button>
       {visibleDialog && (
         <Dialog title={"Add Scholar"} onClose={toggleDialog}>
