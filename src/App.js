@@ -21,7 +21,7 @@ function App() {
     query.equalTo("objectId", uid)
   );
   const urlData = JSON.parse(JSON.stringify(data, null, 2))[0]; // wtf is this object?  can't figure out how to parse w/o this hack
-  console.log("URLDATA", urlData, error);
+  // console.log("URLDATA", urlData, error);
 
   useEffect(() => {
     async function fetchSLP(ronin) {
@@ -35,7 +35,7 @@ function App() {
     }
     uid.length > 10 && setReadonly(true);
     let scholars = [];
-    console.log("USER", user);
+    // console.log("USER", user);
     if (user) {
       setReadonly(false);
       scholars = user.get("scholarArray");
@@ -47,13 +47,19 @@ function App() {
     if (readonly && urlData) {
       scholars = urlData.scholarArray;
     }
-    console.log("SCHOLARS:", scholars);
-    setScholarArray([...scholars]);
+    // console.log("SCHOLARS:", scholars);
+    setScholarArray([...scholars]); // this creates a new array ref apparently
     setScholarCount(scholars.length);
     scholars.forEach((s) => {
       fetchSLP(s.ronin).then((data) => {
         s["slp"] = data.earnings.slp_inventory;
-        setScholarArray([...scholars]); // this creates a new array ref apparently
+        s["avgslp"] = Math.floor(
+          data.earnings.slp_inventory /
+            ((Date.now() / 1000 - data.earnings.last_claimed) / 86400)
+        );
+        setScholarArray(
+          scholars.sort((a, b) => (a.avgslp < b.avgslp ? 1 : -1))
+        );
       });
     });
   }, [data, user]);
@@ -66,7 +72,6 @@ function App() {
       name: name.current.state.value,
       ronin: ronin.current.state.value,
     };
-    console.log(scholar);
     setScholarArray([...scholarArray, scholar]);
     user.add("scholarArray", scholar);
     user.save();
@@ -87,7 +92,8 @@ function App() {
     <div>
       {scholarArray.map((s, id) => (
         <div key={id}>
-          {s.name} / {s.ronin} / {s.slp ? s.slp : "Loading..."}
+          {id + 1} / {s.name} / {s.ronin} / {s.slp ? s.slp : "Loading..."} /{" "}
+          {s.avgslp ? s.avgslp : "Loading..."}
           <p />
         </div>
       ))}
