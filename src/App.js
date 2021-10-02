@@ -19,20 +19,18 @@ function App() {
     async function fetchSLP(ronin) {
       const response = await fetch(`${SLPAPI}${ronin}`);
       const slp = await response.json();
-      console.log(slp);
       return slp;
     }
     if (user) {
       let scholars = user.get("scholarArray");
+      setScholarArray([...scholars]);
+      setScholarCount(scholars.length);
       scholars.forEach((s) => {
         fetchSLP(s.ronin).then((data) => {
-          console.log("Updating for ronin: ", s.ronin);
           s["slp"] = data.earnings.slp_inventory;
-          setScholarArray([...scholars]);
-          setScholarCount(scholars.length);
+          setScholarArray([...scholars]); // this creates a new array ref apparently
         });
       });
-      console.log("SCHOLARS: ", scholars);
     }
   }, [user]);
 
