@@ -48,7 +48,7 @@ function App() {
         setScholarArray([...scholars]); // this creates a new array ref apparently
       });
     });
-  }, [data]);
+  }, [data, user]);
 
   const toggleDialog = () => {
     setVisibleDialog(!visibleDialog);
