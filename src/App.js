@@ -21,13 +21,17 @@ function App() {
     query.equalTo("objectId", uid)
   );
   const urlData = JSON.parse(JSON.stringify(data, null, 2))[0]; // wtf is this object?  can't figure out how to parse w/o this hack
-  console.log("URLDATA", urlData);
+  console.log("URLDATA", urlData, error);
 
   useEffect(() => {
     async function fetchSLP(ronin) {
-      const response = await fetch(`${SLPAPI}${ronin}`);
-      const slp = await response.json();
-      return slp;
+      try {
+        const response = await fetch(`${SLPAPI}${ronin}`);
+        const slp = await response.json();
+        return slp;
+      } catch (error) {
+        console.log("Fetch error: ", error);
+      }
     }
     uid.length > 10 && setReadonly(true);
     let scholars = [];
@@ -35,6 +39,10 @@ function App() {
     if (user) {
       setReadonly(false);
       scholars = user.get("scholarArray");
+      var acl = new Moralis.ACL();
+      acl.setPublicReadAccess(true);
+      user.setACL(acl);
+      user.save();
     }
     if (readonly && urlData) {
       scholars = urlData.scholarArray;
@@ -64,10 +72,6 @@ function App() {
     user.save();
     toggleDialog();
   };
-
-  if (isAuthenticated) {
-    user.setACL(new Moralis.ACL().setPublicReadAccess(true)); // no idea if this is working - need a new metamask
-  }
 
   if (!isAuthenticated && !readonly) {
     return (
