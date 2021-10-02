@@ -1,9 +1,10 @@
 import "@progress/kendo-theme-bootstrap/dist/all.css";
 import "./App.css";
-import { useMoralis } from "react-moralis";
+import { useMoralis, useMoralisQuery } from "react-moralis";
 import { useState, useRef, useEffect } from "react";
 import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
 import { Input } from "@progress/kendo-react-inputs";
+const Moralis = require("moralis");
 
 function App() {
   const SLPAPI = "https://api.lunaciaproxy.cloud/_earnings/";
@@ -12,8 +13,15 @@ function App() {
   const [scholarArray, setScholarArray] = useState([]);
   const [scholarCount, setScholarCount] = useState(0);
   const [visibleDialog, setVisibleDialog] = useState(false);
+  const [readonly, setReadonly] = useState(false);
   const name = useRef(null);
   const ronin = useRef(null);
+  let uid = window.location.href.split("/").pop(); // eg. http://localhost:3000/JCmVv8nRMcHZqFgHQFmNXTo5
+  const { data, error, isLoading } = useMoralisQuery("User", (query) =>
+    query.equalTo("objectId", uid)
+  );
+  const urlData = JSON.parse(JSON.stringify(data, null, 2))[0]; // wtf is this object?  can't figure out how to parse w/o this hack
+  console.log("URLDATA", urlData);
 
   useEffect(() => {
     async function fetchSLP(ronin) {
@@ -21,18 +29,26 @@ function App() {
       const slp = await response.json();
       return slp;
     }
+    uid.length > 10 && setReadonly(true);
+    let scholars = [];
+    console.log("USER", user);
     if (user) {
-      let scholars = user.get("scholarArray");
-      setScholarArray([...scholars]);
-      setScholarCount(scholars.length);
-      scholars.forEach((s) => {
-        fetchSLP(s.ronin).then((data) => {
-          s["slp"] = data.earnings.slp_inventory;
-          setScholarArray([...scholars]); // this creates a new array ref apparently
-        });
-      });
+      setReadonly(false);
+      scholars = user.get("scholarArray");
     }
-  }, [user]);
+    if (readonly && urlData) {
+      scholars = urlData.scholarArray;
+    }
+    console.log("SCHOLARS:", scholars);
+    setScholarArray([...scholars]);
+    setScholarCount(scholars.length);
+    scholars.forEach((s) => {
+      fetchSLP(s.ronin).then((data) => {
+        s["slp"] = data.earnings.slp_inventory;
+        setScholarArray([...scholars]); // this creates a new array ref apparently
+      });
+    });
+  }, [data]);
 
   const toggleDialog = () => {
     setVisibleDialog(!visibleDialog);
@@ -49,7 +65,11 @@ function App() {
     toggleDialog();
   };
 
-  if (!isAuthenticated) {
+  if (isAuthenticated) {
+    user.setACL(new Moralis.ACL().setPublicReadAccess(true)); // no idea if this is working - need a new metamask
+  }
+
+  if (!isAuthenticated && !readonly) {
     return (
       <div>
         <button onClick={() => authenticate()}>
@@ -69,12 +89,16 @@ function App() {
       ))}
       Scholar Count: {scholarCount}
       <p />
-      <button onClick={() => setVisibleDialog(!visibleDialog)}>
-        Add a Scholar
-      </button>
-      <button onClick={() => logout()} disabled={isAuthenticating}>
-        Logout
-      </button>
+      {!readonly && (
+        <div>
+          <button onClick={() => setVisibleDialog(!visibleDialog)}>
+            Add a Scholar
+          </button>
+          <button onClick={() => logout()} disabled={isAuthenticating}>
+            Logout
+          </button>
+        </div>
+      )}
       {visibleDialog && (
         <Dialog title={"Add Scholar"} onClose={toggleDialog}>
           <p
