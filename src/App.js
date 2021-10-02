@@ -10,20 +10,29 @@ function App() {
   const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
     useMoralis();
   const [scholarArray, setScholarArray] = useState([]);
+  const [scholarCount, setScholarCount] = useState(0);
   const [visibleDialog, setVisibleDialog] = useState(false);
   const name = useRef(null);
   const ronin = useRef(null);
 
   useEffect(() => {
+    async function fetchSLP(ronin) {
+      const response = await fetch(`${SLPAPI}${ronin}`);
+      const slp = await response.json();
+      console.log(slp);
+      return slp;
+    }
     if (user) {
       let scholars = user.get("scholarArray");
-      console.log("SCHOLARS: ", scholars);
       scholars.forEach((s) => {
-        fetch(`${SLPAPI}${s.ronin}`)
-          .then((response) => response.json())
-          .then((data) => console.log(data));
+        fetchSLP(s.ronin).then((data) => {
+          console.log("Updating for ronin: ", s.ronin);
+          s["slp"] = data.earnings.slp_inventory;
+          setScholarArray([...scholars]);
+          setScholarCount(scholars.length);
+        });
       });
-      setScholarArray(scholars);
+      console.log("SCHOLARS: ", scholars);
     }
   }, [user]);
 
@@ -56,11 +65,12 @@ function App() {
     <div>
       {scholarArray.map((s, id) => (
         <div key={id}>
-          {s.name}
-          {s.ronin}
+          {s.name} / {s.ronin} / {s.slp ? s.slp : "Loading..."}
           <p />
         </div>
       ))}
+      Scholar Count: {scholarCount}
+      <p />
       <button onClick={() => setVisibleDialog(!visibleDialog)}>
         Add a Scholar
       </button>
