@@ -7,6 +7,7 @@ import { Input } from "@progress/kendo-react-inputs";
 const Moralis = require("moralis");
 
 function App() {
+  const BASE_URL = "http://localhost:3000/";
   const SLPAPI = "https://axie-scho-tracker-server.herokuapp.com/api/account/"; // "https://api.lunaciaproxy.cloud/_earnings/";
   const {
     authenticate,
@@ -53,7 +54,7 @@ function App() {
     try {
       const response = await fetch(`${SLPAPI}${s.ronin}`);
       const slp = await response.json();
-      console.log(s.name, slp);
+      // console.log(s.name, slp);
       return slp;
     } catch (error) {
       console.log("Fetch error: ", error);
@@ -64,13 +65,13 @@ function App() {
     scholars.forEach((s) => {
       fetchSLP(s)
         .then((data) => {
-          console.log(s.name);
           s["slp"] = data.slpData.gameSlp; // data.earnings.slp_inventory;
           s["avgslp"] = Math.floor(
             s.slp / ((Date.now() / 1000 - data.slpData.lastClaim) / 86400) // data.earnings.last_claimed) / 86400)
           );
         })
         .finally(() => {
+          // This does NOT work w/o the spread operator.  Drove me fucking nuts.
           setScholarArray([
             ...scholars.sort((a, b) => (a.avgslp < b.avgslp ? 1 : -1)),
           ]);
@@ -100,6 +101,10 @@ function App() {
     user.set("scholarArray", testscholars); // to reset for setToSortedString
     user.save();
     setScholarArray(testscholars);
+  };
+
+  const shareLeaderboard = () => {
+    console.log(BASE_URL + user.id);
   };
 
   if (!isAuthenticated && !readonly) {
@@ -132,6 +137,7 @@ function App() {
           <button onClick={() => logout()} disabled={isAuthenticating}>
             Logout
           </button>
+          <button onClick={shareLeaderboard}>Share Leaderboard</button>
           <button onClick={resetDB}>Reset DB</button>
         </div>
       )}
