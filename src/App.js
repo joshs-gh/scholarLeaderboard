@@ -8,7 +8,7 @@ const Moralis = require("moralis");
 
 function App() {
   const BASE_URL = "http://localhost:3000/";
-  const SLPAPI = "https://game-api.axie.technology/slp/"; //  "https://axie-scho-tracker-server.herokuapp.com/api/account/";
+  const GAME_API = "https://game-api.axie.technology/"; //  "https://axie-scho-tracker-server.herokuapp.com/api/account/";
   const EXCHANGE_API = "https://exchange-rate.axieinfinity.com/";
   const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
     useMoralis();
@@ -43,12 +43,12 @@ function App() {
     refreshSLP(scholars);
   }, [data, user]);
 
-  async function fetchSLP(ronins) {
+  async function fetchData(ronins, slpmmr) {
     if (!ronins) return;
     try {
-      const response = await fetch(`${SLPAPI}${ronins}`);
-      const slp = await response.json();
-      return slp;
+      const response = await fetch(`${GAME_API}${slpmmr}/${ronins}`);
+      const result = await response.json();
+      return result;
     } catch (error) {
       console.log("Fetch error: ", error);
     }
@@ -59,23 +59,35 @@ function App() {
     scholars.forEach((s) => {
       ronins = ronins + `${s.ronin},`;
     });
-    fetchSLP(ronins)
+    fetchData(ronins, "slp").then((data) => {
+      scholars.forEach((s) => {
+        let dataindex;
+        for (let i = 0; i < data.length - 1; i++) {
+          if (s.ronin === data[i].client_id.replace("0x", "ronin:"))
+            dataindex = i;
+        }
+        s["slp"] =
+          data[dataindex].total - data[dataindex].blockchain_related.balance;
+        s["avgslp"] = Math.floor(
+          s["slp"] /
+            Math.ceil(
+              (Date.now() / 1000 - data[dataindex].last_claimed_item_at) / 86400
+            )
+        );
+      });
+    });
+    fetchData(ronins, "mmr")
       .then((data) => {
+        console.log(data);
         scholars.forEach((s) => {
           let dataindex;
           for (let i = 0; i < data.length - 1; i++) {
-            if (s.ronin === data[i].client_id.replace("0x", "ronin:"))
+            if (s.ronin === data[i].items[1].client_id.replace("0x", "ronin:"))
               dataindex = i;
           }
-          s["slp"] =
-            data[dataindex].total - data[dataindex].blockchain_related.balance;
-          s["avgslp"] = Math.floor(
-            s["slp"] /
-              Math.ceil(
-                (Date.now() / 1000 - data[dataindex].last_claimed_item_at) /
-                  86400
-              )
-          );
+          console.log(dataindex);
+          s["elo"] = data[dataindex].items[1].elo.toLocaleString();
+          s["rank"] = data[dataindex].items[1].rank.toLocaleString();
         });
       })
       .finally(() => {
@@ -146,7 +158,9 @@ function App() {
         <div key={id}>
           {id + 1} / {s.name} / {s.ronin} /{" "}
           {s.slp !== null ? s.slp : "Loading..."} /{" "}
-          {s.avgslp !== null ? s.avgslp : "Loading..."}
+          {s.avgslp !== null ? s.avgslp : "Loading..."} /
+          {s.elo !== null ? s.elo : "loading..."} /
+          {s.rank !== null ? s.rank : "loading..."} /
           {!readonly ? (
             <button onClick={() => delScholar(id)}>Delete</button>
           ) : (
