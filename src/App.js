@@ -12,6 +12,7 @@ function App() {
   const EXCHANGE_API = "https://exchange-rate.axieinfinity.com/";
   const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
     useMoralis();
+  const [teamName, setTeamName] = useState("");
   const [scholarArray, setScholarArray] = useState([]);
   const [scholarCount, setScholarCount] = useState(0);
   const [visibleDialog, setVisibleDialog] = useState(false);
@@ -23,12 +24,10 @@ function App() {
     query.equalTo("objectId", uid)
   );
   const urlData = JSON.parse(JSON.stringify(data, null, 2))[0]; // wtf is this object?  can't figure out how to parse w/o this hack
-  // console.log("URLDATA", urlData, error);
 
   useEffect(() => {
     uid.length > 10 && setReadonly(true);
     let scholars = [];
-    // console.log("USER", user);
     if (user) {
       setReadonly(false);
       scholars = user.get("scholarArray");
@@ -40,7 +39,6 @@ function App() {
     if (readonly && urlData) {
       scholars = urlData.scholarArray;
     }
-    // console.log("SCHOLARS:", scholars);
     setScholarArray([...scholars]); // this creates a new array ref apparently
     refreshSLP(scholars);
   }, [data, user]);
@@ -50,7 +48,6 @@ function App() {
     try {
       const response = await fetch(`${SLPAPI}${ronins}`);
       const slp = await response.json();
-      // console.log(s.name, slp);
       return slp;
     } catch (error) {
       console.log("Fetch error: ", error);
@@ -64,7 +61,6 @@ function App() {
     });
     fetchSLP(ronins)
       .then((data) => {
-        console.log(data);
         scholars.forEach((s) => {
           let dataindex;
           for (let i = 0; i < data.length - 1; i++) {
@@ -93,6 +89,12 @@ function App() {
 
   const toggleDialog = () => {
     setVisibleDialog(!visibleDialog);
+  };
+
+  const setTeam = () => {
+    setTeamName("Merkle Scholars");
+    user.set("teamName", "Merkle Scholars");
+    user.save();
   };
 
   const addScholar = () => {
@@ -139,6 +141,7 @@ function App() {
 
   return (
     <div>
+      {teamName && <h1>{teamName}</h1>}
       {scholarArray.map((s, id) => (
         <div key={id}>
           {id + 1} / {s.name} / {s.ronin} /{" "}
@@ -159,11 +162,12 @@ function App() {
           <button onClick={() => setVisibleDialog(!visibleDialog)}>
             Add a Scholar
           </button>
-          <button onClick={() => logout()} disabled={isAuthenticating}>
-            Logout
-          </button>
+          <button onClick={() => setTeam()}>Set Team Name</button>
           <button onClick={shareLeaderboard}>Share Leaderboard</button>
           <button onClick={resetDB}>Reset DB</button>
+          <button onClick={() => logout()} disabled={isAuthenticating}>
+            Logout
+          </button>{" "}
         </div>
       )}
       {visibleDialog && (
@@ -226,32 +230,3 @@ let testscholars = [
   // },
   // ronin:562c7a8a4c05f2ecd555254740428d74eaf736c3
 ];
-
-// const setData = () => {
-//   user.set("scholarArray", [
-//     {
-//       name: "Bob",
-//       ronin: "ronin:328492308493028439243902",
-//     },
-//   ]);
-//   user.save();
-//   console.log(user.get("scholarArray"));
-// };
-
-// const addData = () => {
-//   user.addUnique("scholarArray", {
-//     name: "Pam",
-//     ronin: "ronin:7897987897878",
-//   });
-//   user.save();
-//   console.log(user.get("scholarArray"));
-// };
-
-// const delData = () => {
-//   user.remove("scholarArray", {
-//     name: "Pam",
-//     ronin: "ronin:7897987897878",
-//   });
-//   user.save();
-//   console.log(user.get("scholarArray"));
-// };
