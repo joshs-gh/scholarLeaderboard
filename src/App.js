@@ -1,9 +1,14 @@
-import "@progress/kendo-theme-bootstrap/dist/all.css";
 import "./App.css";
 import { useMoralis, useMoralisQuery } from "react-moralis";
 import { useState, useRef, useEffect } from "react";
-import { Dialog, DialogActionsBar } from "@progress/kendo-react-dialogs";
-import { Input } from "@progress/kendo-react-inputs";
+import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
+import Fab from "@mui/material/Fab";
+import AddIcon from "@mui/icons-material/Add";
+import Typography from "@mui/material/Typography";
+import Modal from "@mui/material/Modal";
+import TextField from "@mui/material/TextField";
+
 const Moralis = require("moralis");
 
 function App() {
@@ -15,7 +20,9 @@ function App() {
   const [teamName, setTeamName] = useState("");
   const [scholarArray, setScholarArray] = useState([]);
   const [scholarCount, setScholarCount] = useState(0);
-  const [visibleDialog, setVisibleDialog] = useState(false);
+  const [openAS, setOpenAS] = useState(false);
+  const handleOpenAS = () => setOpenAS(true);
+  const handleCloseAS = () => setOpenAS(false);
   const [readonly, setReadonly] = useState(false);
   const name = useRef(null);
   const ronin = useRef(null);
@@ -78,14 +85,12 @@ function App() {
     });
     fetchData(ronins, "mmr")
       .then((data) => {
-        console.log(data);
         scholars.forEach((s) => {
           let dataindex;
           for (let i = 0; i < data.length - 1; i++) {
             if (s.ronin === data[i].items[1].client_id.replace("0x", "ronin:"))
               dataindex = i;
           }
-          console.log(dataindex);
           s["elo"] = data[dataindex].items[1].elo.toLocaleString();
           s["rank"] = data[dataindex].items[1].rank.toLocaleString();
         });
@@ -99,9 +104,9 @@ function App() {
       });
   };
 
-  const toggleDialog = () => {
-    setVisibleDialog(!visibleDialog);
-  };
+  // const toggleDialog = () => {
+  //   setVisibleDialog(!visibleDialog);
+  // };
 
   const setTeam = () => {
     setTeamName("Merkle Scholars");
@@ -110,15 +115,16 @@ function App() {
   };
 
   const addScholar = () => {
+    console.log(name, ronin);
     let scholar = {
-      name: name.current.state.value,
-      ronin: ronin.current.state.value,
+      name: name.current.value,
+      ronin: ronin.current.value,
     };
     console.log("Adding Scholar: ", scholar);
     user.add("scholarArray", scholar);
     user.save();
     setScholarArray([...scholarArray, scholar]);
-    toggleDialog();
+    handleCloseAS();
     refreshSLP([...scholarArray, scholar]);
   };
 
@@ -144,69 +150,165 @@ function App() {
   if (!isAuthenticated && !readonly) {
     return (
       <div>
-        <button onClick={() => authenticate()}>
-          Authenticate with Metamask
-        </button>
+        <Box
+          sx={{
+            mx: "auto",
+            p: 1,
+            m: 1,
+            borderRadius: 1,
+            textAlign: "center",
+          }}
+        >
+          <img
+            src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/MetaMask_Fox.svg/1200px-MetaMask_Fox.svg.png"
+            alt="Metamask"
+            style={{ width: "250px", marginTop: "20vh" }}
+          />
+          <p />
+          <Button variant="outlined" onClick={() => authenticate()}>
+            Authenticate with Metamask
+          </Button>
+        </Box>
       </div>
     );
   }
 
   return (
     <div>
-      {teamName && <h1>{teamName}</h1>}
-      {scholarArray.map((s, id) => (
-        <div key={id}>
-          {id + 1} / {s.name} / {s.ronin} /{" "}
-          {s.slp !== null ? s.slp : "Loading..."} /{" "}
-          {s.avgslp !== null ? s.avgslp : "Loading..."} /
-          {s.elo !== null ? s.elo : "loading..."} /
-          {s.rank !== null ? s.rank : "loading..."} /
-          {!readonly ? (
-            <button onClick={() => delScholar(id)}>Delete</button>
-          ) : (
-            <span />
-          )}
-          <p />
-        </div>
-      ))}
-      Scholar Count: {scholarCount}
-      <p />
-      {!readonly && (
-        <div>
-          <button onClick={() => setVisibleDialog(!visibleDialog)}>
-            Add a Scholar
-          </button>
-          <button onClick={() => setTeam()}>Set Team Name</button>
-          <button onClick={shareLeaderboard}>Share Leaderboard</button>
-          <button onClick={resetDB}>Reset DB</button>
-          <button onClick={() => logout()} disabled={isAuthenticating}>
-            Logout
-          </button>{" "}
-        </div>
-      )}
-      {visibleDialog && (
-        <Dialog title={"Add Scholar"} onClose={toggleDialog}>
-          <p
-            style={{
-              margin: "25px",
+      <Box
+        sx={{
+          mx: "auto",
+          p: 1,
+          m: 1,
+          borderRadius: 1,
+          textAlign: "center",
+        }}
+      >
+        {teamName && (
+          <h1>
+            Axie Scholars Leaderboard for: <p /> {teamName}
+          </h1>
+        )}
+        {scholarArray.map((s, id) => (
+          <div key={id}>
+            {id + 1} / {s.name} / {s.ronin} /{" "}
+            {s.slp !== null ? s.slp : "Loading..."} /{" "}
+            {s.avgslp !== null ? s.avgslp : "Loading..."} /
+            {s.elo !== null ? s.elo : "loading..."} /
+            {s.rank !== null ? s.rank : "loading..."} /
+            {!readonly ? (
+              <Button variant="outlined" onClick={() => delScholar(id)}>
+                Delete
+              </Button>
+            ) : (
+              <span />
+            )}
+            <p />
+          </div>
+        ))}
+        Scholar Count: {scholarCount}
+        <p />
+        {!readonly && (
+          <div>
+            <Fab
+              variant="extended"
+              size="medium"
+              color="primary"
+              aria-label="add"
+              onClick={handleOpenAS}
+            >
+              <AddIcon sx={{ mr: 1 }} />
+              Add Scholar
+            </Fab>
+            <Button variant="outlined" onClick={() => setTeam()}>
+              Set Team Name
+            </Button>
+            <Button variant="outlined" onClick={shareLeaderboard}>
+              Share Leaderboard
+            </Button>
+            <Button variant="outlined" onClick={resetDB}>
+              Reset DB
+            </Button>
+            <Button
+              variant="outlined"
+              onClick={() => logout()}
+              disabled={isAuthenticating}
+            >
+              Logout
+            </Button>{" "}
+          </div>
+        )}
+        <Modal open={openAS} onClose={handleCloseAS}>
+          <Box
+            sx={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              width: 490,
+              bgcolor: "background.paper",
+              border: "2px solid #000",
+              boxShadow: 24,
+              p: 4,
               textAlign: "center",
             }}
           >
-            Enter Scholar Info:{" "}
-          </p>
-          <Input placeholder="Name" ref={name} />
-          <p />
-          <Input placeholder="Ronin Wallet" ref={ronin} />
-          <DialogActionsBar>
-            <button className="k-button" onClick={() => addScholar()}>
+            <Typography
+              id="modal-modal-title"
+              variant="h6"
+              component="h2"
+              style={{ marginBottom: "5px" }}
+            >
+              Add Scholar{" "}
+            </Typography>
+            <TextField
+              id="outlined-basic"
+              label="Name"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={name}
+            />
+            <TextField
+              id="outlined-basic"
+              label="Ronin Wallet"
+              variant="outlined"
+              margin="normal"
+              fullWidth
+              inputRef={ronin}
+            />
+            <Button
+              variant="contained"
+              color="info"
+              style={{ margin: "10px" }}
+              onClick={() => addScholar()}
+            >
               Save
-            </button>
-            <button className="k-button" onClick={toggleDialog}>
+            </Button>
+            <Button variant="outlined" onClick={handleCloseAS}>
               Cancel
-            </button>
-          </DialogActionsBar>
-        </Dialog>
-      )}
+            </Button>
+          </Box>
+        </Modal>
+        {/* {visibleDialog && (
+          <Dialog title={"Add Scholar"} onClose={toggleDialog}>
+            <p
+              style={{
+                margin: "25px",
+                textAlign: "center",
+              }}
+            >
+              Enter Scholar Info:{" "}
+            </p>
+            <Input placeholder="Name" ref={name} />
+            <p />
+            <Input placeholder="Ronin Wallet" ref={ronin} />
+            <DialogActionsBar>
+             
+            </DialogActionsBar>
+          </Dialog> 
+        )}*/}
+      </Box>
     </div>
   );
 }
