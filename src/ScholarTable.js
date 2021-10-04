@@ -156,7 +156,7 @@ EnhancedTableHead.propTypes = {
 };
 
 const EnhancedTableToolbar = (props) => {
-  const { numSelected, teamName } = props;
+  const { numSelected, teamName, delScholar, selected } = props;
 
   return (
     <Toolbar
@@ -194,16 +194,12 @@ const EnhancedTableToolbar = (props) => {
 
       {numSelected > 0 ? (
         <Tooltip title="Delete">
-          <IconButton>
+          <IconButton onClick={() => delScholar(selected)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
       ) : (
-        <Tooltip title="Filter list">
-          <IconButton>
-            <FilterListIcon />
-          </IconButton>
-        </Tooltip>
+        <div />
       )}
     </Toolbar>
   );
@@ -219,7 +215,7 @@ export default function ScholarTable({ scholarArray, teamName, delScholar }) {
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
-  const [rowsPerPage, setRowsPerPage] = React.useState(5);
+  const [rowsPerPage, setRowsPerPage] = React.useState(10);
   rows = [...scholarArray];
 
   const handleRequestSort = (event, property) => {
@@ -282,6 +278,8 @@ export default function ScholarTable({ scholarArray, teamName, delScholar }) {
         <EnhancedTableToolbar
           numSelected={selected.length}
           teamName={teamName}
+          delScholar={delScholar}
+          selected={selected}
         />
         <TableContainer>
           <Table
@@ -353,20 +351,28 @@ export default function ScholarTable({ scholarArray, teamName, delScholar }) {
             </TableBody>
           </Table>
         </TableContainer>
-        <TablePagination
-          rowsPerPageOptions={[5, 10, 25]}
-          component="div"
-          count={rows.length}
-          rowsPerPage={rowsPerPage}
-          page={page}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
-        />
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            marginLeft: "10px",
+          }}
+        >
+          <FormControlLabel
+            control={<Switch checked={dense} onChange={handleChangeDense} />}
+            label="Dense padding"
+          />
+          <TablePagination
+            rowsPerPageOptions={[5, 10, 25]}
+            component="div"
+            count={rows.length}
+            rowsPerPage={rowsPerPage}
+            page={page}
+            onPageChange={handleChangePage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+          />
+        </div>
       </Paper>
-      <FormControlLabel
-        control={<Switch checked={dense} onChange={handleChangeDense} />}
-        label="Dense padding"
-      />
     </Box>
   );
 }

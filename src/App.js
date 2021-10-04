@@ -19,7 +19,6 @@ function App() {
     useMoralis();
   const [teamName, setTeamName] = useState(null);
   const [scholarArray, setScholarArray] = useState([]);
-  const [scholarCount, setScholarCount] = useState(0);
   const [openAS, setOpenAS] = useState(false);
   const [openTM, setOpenTM] = useState(false);
   const [readonly, setReadonly] = useState(false);
@@ -101,15 +100,17 @@ function App() {
         setScholarArray([
           ...scholars.sort((a, b) => (a.avgslp < b.avgslp ? 1 : -1)),
         ]);
-        setScholarCount(scholars.length);
       });
   };
 
-  const delScholar = (id) => {
+  const delScholar = (nameArray) => {
     let newa = [...scholarArray];
-    newa.splice(id, 1);
+    nameArray.forEach((n) => {
+      for (let i = 0; i < newa.length; i++) {
+        if (n === newa[i].name) newa.splice(i, 1);
+      }
+    });
     setScholarArray([...newa]);
-    setScholarCount(newa.length);
     user.set("scholarArray", newa);
     user.save();
   };
@@ -181,24 +182,6 @@ function App() {
             delScholar={delScholar}
           />
         </div>
-        {/* {scholarArray.map((s, id) => (
-          <div key={id}>
-            {id + 1} / {s.name} / {s.ronin} /{" "}
-            {s.slp !== null ? s.slp : "Loading..."} /{" "}
-            {s.avgslp !== null ? s.avgslp : "Loading..."} /
-            {s.elo !== null ? s.elo : "loading..."} /
-            {s.rank !== null ? s.rank : "loading..."} /
-            {!readonly ? (
-              <Button variant="outlined" onClick={() => delScholar(id)}>
-                Delete
-              </Button>
-            ) : (
-              <span />
-            )}
-            <p />
-          </div>
-        ))}
-        Scholar Count: {scholarCount} */}
         <p />
         {!readonly && (
           <div>
