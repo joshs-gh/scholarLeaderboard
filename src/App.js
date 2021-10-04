@@ -108,6 +108,15 @@ function App() {
     refreshSLP([...scholarArray, scholar]);
   };
 
+  const delScholar = (id) => {
+    let newa = [...scholarArray];
+    newa.splice(id, 1);
+    setScholarArray([...newa]);
+    setScholarCount(newa.length);
+    user.set("scholarArray", newa);
+    user.save();
+  };
+
   const resetDB = () => {
     user.set("scholarArray", testscholars); // to reset for setToSortedString
     user.save();
@@ -135,6 +144,11 @@ function App() {
           {id + 1} / {s.name} / {s.ronin} /{" "}
           {s.slp !== null ? s.slp : "Loading..."} /{" "}
           {s.avgslp !== null ? s.avgslp : "Loading..."}
+          {!readonly ? (
+            <button onClick={() => delScholar(id)}>Delete</button>
+          ) : (
+            <span />
+          )}
           <p />
         </div>
       ))}
@@ -210,6 +224,7 @@ let testscholars = [
   //   name: "Blessed",
   //   ronin: "ronin:e7bc0a0dde843460d113376d671b1f9ca0fdb585",
   // },
+  // ronin:562c7a8a4c05f2ecd555254740428d74eaf736c3
 ];
 
 // const setData = () => {
