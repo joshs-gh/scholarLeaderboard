@@ -290,24 +290,6 @@ function App() {
             </Button>
           </Box>
         </Modal>
-        {/* {visibleDialog && (
-          <Dialog title={"Add Scholar"} onClose={toggleDialog}>
-            <p
-              style={{
-                margin: "25px",
-                textAlign: "center",
-              }}
-            >
-              Enter Scholar Info:{" "}
-            </p>
-            <Input placeholder="Name" ref={name} />
-            <p />
-            <Input placeholder="Ronin Wallet" ref={ronin} />
-            <DialogActionsBar>
-             
-            </DialogActionsBar>
-          </Dialog> 
-        )}*/}
       </Box>
     </div>
   );
