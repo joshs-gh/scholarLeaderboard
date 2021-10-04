@@ -6,6 +6,8 @@ import Box from "@mui/material/Box";
 import Fab from "@mui/material/Fab";
 import AddIcon from "@mui/icons-material/Add";
 import AddScholarModal from "./AddScholarModal";
+import AddTeamModal from "./AddTeamModal";
+import ScholarTable from "./ScholarTable";
 
 const Moralis = require("moralis");
 
@@ -15,11 +17,13 @@ function App() {
   const EXCHANGE_API = "https://exchange-rate.axieinfinity.com/";
   const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
     useMoralis();
-  const [teamName, setTeamName] = useState("");
+  const [teamName, setTeamName] = useState(null);
   const [scholarArray, setScholarArray] = useState([]);
   const [scholarCount, setScholarCount] = useState(0);
   const [openAS, setOpenAS] = useState(false);
+  const [openTM, setOpenTM] = useState(false);
   const [readonly, setReadonly] = useState(false);
+
   let uid = window.location.href.split("/").pop(); // eg. http://localhost:3000/JCmVv8nRMcHZqFgHQFmNXTo5
   const { data } = useMoralisQuery("User", (query) =>
     query.equalTo("objectId", uid)
@@ -27,9 +31,11 @@ function App() {
   const urlData = JSON.parse(JSON.stringify(data, null, 2))[0]; // wtf is this object?  can't figure out how to parse w/o this hack
 
   useEffect(() => {
+    !teamName && setOpenTM(true);
     uid.length > 10 && setReadonly(true);
     let scholars = [];
     if (user) {
+      setTeamName(user.get("teamName"));
       setReadonly(false);
       scholars = user.get("scholarArray");
       var acl = new Moralis.ACL();
@@ -39,6 +45,7 @@ function App() {
     }
     if (readonly && urlData) {
       scholars = urlData.scholarArray;
+      setTeamName(urlData.teamName);
     }
     setScholarArray([...scholars]); // this creates a new array ref apparently
     refreshSLP(scholars);
@@ -85,8 +92,8 @@ function App() {
             if (s.ronin === data[i].items[1].client_id.replace("0x", "ronin:"))
               dataindex = i;
           }
-          s["elo"] = data[dataindex].items[1].elo.toLocaleString();
-          s["rank"] = data[dataindex].items[1].rank.toLocaleString();
+          s["elo"] = data[dataindex].items[1].elo;
+          s["rank"] = data[dataindex].items[1].rank;
         });
       })
       .finally(() => {
@@ -96,12 +103,6 @@ function App() {
         ]);
         setScholarCount(scholars.length);
       });
-  };
-
-  const setTeam = () => {
-    setTeamName("Merkle Scholars");
-    user.set("teamName", "Merkle Scholars");
-    user.save();
   };
 
   const delScholar = (id) => {
@@ -149,6 +150,19 @@ function App() {
     );
   }
 
+  if (!teamName && !readonly) {
+    return (
+      <div>
+        <AddTeamModal
+          openTM={openTM}
+          user={user}
+          setOpenTM={setOpenTM}
+          setTeamName={setTeamName}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <Box
@@ -160,12 +174,14 @@ function App() {
           textAlign: "center",
         }}
       >
-        {teamName && (
-          <h1>
-            Axie Scholars Leaderboard for: <p /> {teamName}
-          </h1>
-        )}
-        {scholarArray.map((s, id) => (
+        <div style={{ width: "1000px", margin: "auto" }}>
+          <ScholarTable
+            scholarArray={scholarArray}
+            teamName={teamName}
+            delScholar={delScholar}
+          />
+        </div>
+        {/* {scholarArray.map((s, id) => (
           <div key={id}>
             {id + 1} / {s.name} / {s.ronin} /{" "}
             {s.slp !== null ? s.slp : "Loading..."} /{" "}
@@ -182,7 +198,7 @@ function App() {
             <p />
           </div>
         ))}
-        Scholar Count: {scholarCount}
+        Scholar Count: {scholarCount} */}
         <p />
         {!readonly && (
           <div>
@@ -196,9 +212,6 @@ function App() {
               <AddIcon sx={{ mr: 1 }} />
               Add Scholar
             </Fab>
-            <Button variant="outlined" onClick={() => setTeam()}>
-              Set Team Name
-            </Button>
             <Button variant="outlined" onClick={shareLeaderboard}>
               Share Leaderboard
             </Button>
