@@ -22,10 +22,18 @@ function App() {
   const [scholarCount, setScholarCount] = useState(0);
   const [openAS, setOpenAS] = useState(false);
   const handleOpenAS = () => setOpenAS(true);
-  const handleCloseAS = () => setOpenAS(false);
+  const handleCloseAS = () => {
+    setOpenAS(false);
+    setRoninError(false);
+    setNameError(false);
+    setNewAS(true);
+  };
   const [readonly, setReadonly] = useState(false);
   const name = useRef(null);
   const ronin = useRef(null);
+  const [roninError, setRoninError] = useState(false);
+  const [nameError, setNameError] = useState(false);
+  const [newAS, setNewAS] = useState(true);
   let uid = window.location.href.split("/").pop(); // eg. http://localhost:3000/JCmVv8nRMcHZqFgHQFmNXTo5
   const { data, error, isLoading } = useMoralisQuery("User", (query) =>
     query.equalTo("objectId", uid)
@@ -147,6 +155,21 @@ function App() {
     console.log(BASE_URL + user.id);
   };
 
+  const validateName = () => {
+    setNameError(false);
+    if (name.current.value.length === 0) setNameError(true);
+  };
+
+  const validateRonin = () => {
+    setRoninError(false);
+    if (
+      ronin.current.value.substring(0, 6) !== "ronin:" ||
+      ronin.current.value.length !== 46
+    )
+      setRoninError(true);
+    setNewAS(false);
+  };
+
   if (!isAuthenticated && !readonly) {
     return (
       <div>
@@ -233,6 +256,7 @@ function App() {
               variant="outlined"
               onClick={() => logout()}
               disabled={isAuthenticating}
+              color="error"
             >
               Logout
             </Button>{" "}
@@ -262,26 +286,33 @@ function App() {
               Add Scholar{" "}
             </Typography>
             <TextField
-              id="outlined-basic"
+              error={nameError}
+              helperText={nameError ? "Please provide a name" : ""}
               label="Name"
               variant="outlined"
               margin="normal"
               fullWidth
               inputRef={name}
+              onChange={validateName}
             />
             <TextField
-              id="outlined-basic"
+              error={roninError}
+              helperText={
+                roninError ? "Please provide a valid ronin address" : ""
+              }
               label="Ronin Wallet"
               variant="outlined"
               margin="normal"
               fullWidth
               inputRef={ronin}
+              onChange={validateRonin}
             />
             <Button
               variant="contained"
               color="info"
               style={{ margin: "10px" }}
               onClick={() => addScholar()}
+              disabled={newAS || roninError || nameError}
             >
               Save
             </Button>
