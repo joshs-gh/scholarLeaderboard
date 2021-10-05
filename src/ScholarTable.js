@@ -101,6 +101,7 @@ function EnhancedTableHead(props) {
     numSelected,
     rowCount,
     onRequestSort,
+    readonly,
   } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
@@ -110,15 +111,17 @@ function EnhancedTableHead(props) {
     <TableHead>
       <TableRow>
         <TableCell padding="checkbox">
-          <Checkbox
-            color="primary"
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{
-              "aria-label": "select all desserts",
-            }}
-          />
+          {!readonly && (
+            <Checkbox
+              color="primary"
+              indeterminate={numSelected > 0 && numSelected < rowCount}
+              checked={rowCount > 0 && numSelected === rowCount}
+              onChange={onSelectAllClick}
+              inputProps={{
+                "aria-label": "select all desserts",
+              }}
+            />
+          )}
         </TableCell>
         {headCells.map((headCell) => (
           <TableCell
@@ -156,7 +159,8 @@ EnhancedTableHead.propTypes = {
 };
 
 const EnhancedTableToolbar = (props) => {
-  const { numSelected, teamName, delScholar, selected } = props;
+  const { numSelected, teamName, delScholar, selected, readonly, setSelected } =
+    props;
 
   return (
     <Toolbar
@@ -192,9 +196,14 @@ const EnhancedTableToolbar = (props) => {
         </Typography>
       )}
 
-      {numSelected > 0 ? (
+      {numSelected > 0 && !readonly ? (
         <Tooltip title="Delete">
-          <IconButton onClick={() => delScholar(selected)}>
+          <IconButton
+            onClick={() => {
+              delScholar(selected);
+              setSelected([]);
+            }}
+          >
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -209,7 +218,12 @@ EnhancedTableToolbar.propTypes = {
   numSelected: PropTypes.number.isRequired,
 };
 
-export default function ScholarTable({ scholarArray, teamName, delScholar }) {
+export default function ScholarTable({
+  scholarArray,
+  teamName,
+  delScholar,
+  readonly,
+}) {
   const [order, setOrder] = React.useState("asc");
   const [orderBy, setOrderBy] = React.useState("calories");
   const [selected, setSelected] = React.useState([]);
@@ -280,6 +294,8 @@ export default function ScholarTable({ scholarArray, teamName, delScholar }) {
           teamName={teamName}
           delScholar={delScholar}
           selected={selected}
+          setSelected={setSelected}
+          readonly={readonly}
         />
         <TableContainer>
           <Table
@@ -294,6 +310,7 @@ export default function ScholarTable({ scholarArray, teamName, delScholar }) {
               onSelectAllClick={handleSelectAllClick}
               onRequestSort={handleRequestSort}
               rowCount={rows.length}
+              readonly={readonly}
             />
             <TableBody>
               {/* if you don't need to support IE11, you can replace the `stableSort` call with:
@@ -315,13 +332,15 @@ export default function ScholarTable({ scholarArray, teamName, delScholar }) {
                       selected={isItemSelected}
                     >
                       <TableCell padding="checkbox">
-                        <Checkbox
-                          color="primary"
-                          checked={isItemSelected}
-                          inputProps={{
-                            "aria-labelledby": labelId,
-                          }}
-                        />
+                        {!readonly && (
+                          <Checkbox
+                            color="primary"
+                            checked={isItemSelected}
+                            inputProps={{
+                              "aria-labelledby": labelId,
+                            }}
+                          />
+                        )}
                       </TableCell>
                       <TableCell
                         component="th"

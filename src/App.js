@@ -180,6 +180,7 @@ function App() {
             scholarArray={scholarArray}
             teamName={teamName}
             delScholar={delScholar}
+            readonly={readonly}
           />
         </div>
         <p />
