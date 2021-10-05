@@ -19,7 +19,6 @@ import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
 import { visuallyHidden } from "@mui/utils";
 
 let rows = [];
@@ -77,7 +76,7 @@ const headCells = [
     id: "avgslp",
     numeric: true,
     disablePadding: false,
-    label: "Daily Average SLP",
+    label: "Daily Avg SLP",
   },
   {
     id: "elo",
@@ -224,8 +223,8 @@ export default function ScholarTable({
   delScholar,
   readonly,
 }) {
-  const [order, setOrder] = React.useState("asc");
-  const [orderBy, setOrderBy] = React.useState("calories");
+  const [order, setOrder] = React.useState("desc");
+  const [orderBy, setOrderBy] = React.useState("avgslp");
   const [selected, setSelected] = React.useState([]);
   const [page, setPage] = React.useState(0);
   const [dense, setDense] = React.useState(false);
