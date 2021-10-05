@@ -1,13 +1,20 @@
 import "./App.css";
 import { useMoralis, useMoralisQuery } from "react-moralis";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
-import Fab from "@mui/material/Fab";
+import Modal from "@mui/material/Modal";
 import AddIcon from "@mui/icons-material/Add";
 import AddScholarModal from "./AddScholarModal";
 import AddTeamModal from "./AddTeamModal";
 import ScholarTable from "./ScholarTable";
+import IosShareIcon from "@mui/icons-material/IosShare";
+import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import TextField from "@mui/material/TextField";
+import Stack from "@mui/material/Stack";
+import Slide from "@mui/material/Slide";
+import Alert from "@mui/material/Alert";
+import Snackbar from "@mui/material/Snackbar";
 
 const Moralis = require("moralis");
 
@@ -21,7 +28,10 @@ function App() {
   const [scholarArray, setScholarArray] = useState([]);
   const [openAS, setOpenAS] = useState(false);
   const [openTM, setOpenTM] = useState(false);
+  const [openSL, setOpenSL] = useState(false);
+  const [copySL, setCopySL] = useState(false);
   const [readonly, setReadonly] = useState(false);
+  const slref = useRef(null);
 
   let uid = window.location.href.split("/").pop(); // eg. http://localhost:3000/JCmVv8nRMcHZqFgHQFmNXTo5
   const { data } = useMoralisQuery("User", (query) =>
@@ -121,8 +131,9 @@ function App() {
     setScholarArray(testscholars);
   };
 
-  const shareLeaderboard = () => {
-    console.log(BASE_URL + user.id);
+  const handleCloseSL = () => {
+    setOpenSL(false);
+    setCopySL(false);
   };
 
   if (!isAuthenticated && !readonly) {
@@ -165,7 +176,7 @@ function App() {
   }
 
   return (
-    <div>
+    <>
       <Box
         sx={{
           mx: "auto",
@@ -186,22 +197,27 @@ function App() {
         <p />
         {!readonly && (
           <div>
-            <Fab
-              variant="extended"
-              size="medium"
+            <Button
+              variant="outlined"
               color="primary"
               aria-label="add"
               onClick={() => setOpenAS(true)}
+              sx={{ mr: 2 }}
             >
               <AddIcon sx={{ mr: 1 }} />
               Add Scholar
-            </Fab>
-            <Button variant="outlined" onClick={shareLeaderboard}>
+            </Button>
+            <Button
+              variant="outlined"
+              sx={{ mr: 2 }}
+              onClick={() => setOpenSL(true)}
+            >
+              <IosShareIcon sx={{ mr: 1 }} />
               Share Leaderboard
             </Button>
-            <Button variant="outlined" onClick={resetDB}>
+            {/* <Button variant="outlined" onClick={resetDB}>
               Reset DB
-            </Button>
+            </Button> */}
             <Button
               variant="outlined"
               onClick={() => logout()}
@@ -209,19 +225,72 @@ function App() {
               color="error"
             >
               Logout
-            </Button>{" "}
+            </Button>
           </div>
         )}
-        <AddScholarModal
-          openAS={openAS}
-          setOpenAS={setOpenAS}
-          user={user}
-          scholarArray={scholarArray}
-          setScholarArray={setScholarArray}
-          refreshSLP={refreshSLP}
-        />
+        {!readonly && (
+          <div>
+            <AddScholarModal
+              openAS={openAS}
+              setOpenAS={setOpenAS}
+              user={user}
+              scholarArray={scholarArray}
+              setScholarArray={setScholarArray}
+              refreshSLP={refreshSLP}
+            />
+            <Modal open={openSL} onClose={handleCloseSL}>
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  transform: "translate(-50%, -50%)",
+                  width: 500,
+                  bgcolor: "background.paper",
+                  border: "2px solid #000",
+                  boxShadow: 24,
+                  p: 2,
+                  textAlign: "center",
+                }}
+                ref={slref}
+              >
+                <Stack direction="row" spacing={2} sx={{ mb: 2 }}>
+                  <TextField
+                    value={BASE_URL + user.id}
+                    fullWidth
+                    InputProps={{
+                      readOnly: true,
+                    }}
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => {
+                      navigator.clipboard.writeText(BASE_URL + user.id);
+                      setCopySL(true);
+                    }}
+                  >
+                    <ContentCopyIcon />
+                  </Button>
+                </Stack>
+              </Box>
+            </Modal>
+            <Snackbar
+              open={copySL}
+              autoHideDuration={3000}
+              onClose={() => setCopySL(false)}
+            >
+              <Alert
+                onClose={() => setCopySL(false)}
+                severity="success"
+                sx={{ width: "100%" }}
+              >
+                Copied!
+              </Alert>
+            </Snackbar>
+          </div>
+        )}
       </Box>
-    </div>
+    </>
   );
 }
 
