@@ -12,16 +12,16 @@ import IosShareIcon from "@mui/icons-material/IosShare";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import TextField from "@mui/material/TextField";
 import Stack from "@mui/material/Stack";
-import Slide from "@mui/material/Slide";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 
 const Moralis = require("moralis");
 
 function App() {
-  const BASE_URL = "http://localhost:3000/";
-  const GAME_API = "https://game-api.axie.technology/"; //  "https://axie-scho-tracker-server.herokuapp.com/api/account/";
-  const EXCHANGE_API = "https://exchange-rate.axieinfinity.com/";
+  // const BASE_URL = "http://localhost:3000/";
+  const BASE_URL = "http://scholar-leaderboard.vercel.app";
+  const GAME_API = "https://game-api.axie.technology/";
+  // const EXCHANGE_API = "https://exchange-rate.axieinfinity.com/";
   const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
     useMoralis();
   const [teamName, setTeamName] = useState(null);
@@ -124,11 +124,11 @@ function App() {
     user.save();
   };
 
-  const resetDB = () => {
-    user.set("scholarArray", testscholars); // to reset for setToSortedString
-    user.save();
-    setScholarArray(testscholars);
-  };
+  // const resetDB = () => {
+  //   user.set("scholarArray", testscholars); // to reset for setToSortedString
+  //   user.save();
+  //   setScholarArray(testscholars);
+  // };
 
   const handleCloseSL = () => {
     setOpenSL(false);
@@ -303,34 +303,34 @@ function App() {
 
 export default App;
 
-let testscholars = [
-  {
-    name: "Geraldine",
-    ronin: "ronin:82594247ad4d2f4a92067f2fbf1b5c8198893eb8",
-  },
-  {
-    name: "Godjell",
-    ronin: "ronin:6e64409eca843f94ae28a2780a4e6ce60f97d1cf",
-  },
-  {
-    name: "Test2",
-    ronin: "ronin:c91d96d21786eedca894f63a9f4509e2877bddeb",
-  },
-  {
-    name: "Bishop",
-    ronin: "ronin:7ac0d26639f2a8e90409a88781cde6c93ac6ef8b",
-  },
-  {
-    name: "Father",
-    ronin: "ronin:f2ed21c1d0be7635c96fccccad2eff5e9a4475e5",
-  },
-  // {
-  //   name: "cheese",
-  //   ronin: "ronin:a5c24437a76d9bf75d413f2234d10e6f1eea531c",
-  // },
-  // {
-  //   name: "Blessed",
-  //   ronin: "ronin:e7bc0a0dde843460d113376d671b1f9ca0fdb585",
-  // },
-  // ronin:562c7a8a4c05f2ecd555254740428d74eaf736c3
-];
+// let testscholars = [
+//   {
+//     name: "Geraldine",
+//     ronin: "ronin:82594247ad4d2f4a92067f2fbf1b5c8198893eb8",
+//   },
+//   {
+//     name: "Godjell",
+//     ronin: "ronin:6e64409eca843f94ae28a2780a4e6ce60f97d1cf",
+//   },
+//   {
+//     name: "Test2",
+//     ronin: "ronin:c91d96d21786eedca894f63a9f4509e2877bddeb",
+//   },
+//   {
+//     name: "Bishop",
+//     ronin: "ronin:7ac0d26639f2a8e90409a88781cde6c93ac6ef8b",
+//   },
+//   {
+//     name: "Father",
+//     ronin: "ronin:f2ed21c1d0be7635c96fccccad2eff5e9a4475e5",
+//   },
+//   {
+//     name: "cheese",
+//     ronin: "ronin:a5c24437a76d9bf75d413f2234d10e6f1eea531c",
+//   },
+//   {
+//     name: "Blessed",
+//     ronin: "ronin:e7bc0a0dde843460d113376d671b1f9ca0fdb585",
+//   },
+//   { name: "Zammy", ronin: "ronin:562c7a8a4c05f2ecd555254740428d74eaf736c3" },
+// ];
