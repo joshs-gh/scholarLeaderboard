@@ -71,6 +71,7 @@ function App() {
   }
 
   const refreshSLP = (scholars) => {
+    if (!scholars) return;
     let ronins = "";
     scholars.forEach((s) => {
       ronins = ronins + `${s.ronin},`;
