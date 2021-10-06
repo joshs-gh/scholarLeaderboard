@@ -55,7 +55,7 @@ function App() {
       scholars = urlData.scholarArray;
       setTeamName(urlData.teamName);
     }
-    setScholarArray([...scholars]); // this creates a new array ref apparently
+    scholars && setScholarArray([...scholars]);
     refreshSLP(scholars);
   }, [data, user]);
 
