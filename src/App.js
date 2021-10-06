@@ -19,7 +19,7 @@ const Moralis = require("moralis");
 
 function App() {
   // const BASE_URL = "http://localhost:3000/";
-  const BASE_URL = "http://scholar-leaderboard.vercel.app";
+  const BASE_URL = "http://scholar-leaderboard.vercel.app/";
   const GAME_API = "https://game-api.axie.technology/";
   // const EXCHANGE_API = "https://exchange-rate.axieinfinity.com/";
   const { authenticate, isAuthenticated, user, logout, isAuthenticating } =
