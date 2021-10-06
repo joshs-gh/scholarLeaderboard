@@ -40,7 +40,6 @@ function App() {
   const urlData = JSON.parse(JSON.stringify(data, null, 2))[0]; // wtf is this object?  can't figure out how to parse w/o this hack
 
   useEffect(() => {
-    !teamName && setOpenTM(true);
     uid.length > 10 && setReadonly(true);
     let scholars = [];
     if (user) {
@@ -166,7 +165,7 @@ function App() {
     return (
       <div>
         <AddTeamModal
-          openTM={openTM}
+          openTM={true}
           user={user}
           setOpenTM={setOpenTM}
           setTeamName={setTeamName}
@@ -192,6 +191,7 @@ function App() {
             teamName={teamName}
             delScholar={delScholar}
             readonly={readonly}
+            setOpenTM={setOpenTM}
           />
         </div>
         <p />
@@ -287,6 +287,13 @@ function App() {
                 Copied!
               </Alert>
             </Snackbar>
+            <AddTeamModal
+              openTM={openTM}
+              user={user}
+              setOpenTM={setOpenTM}
+              setTeamName={setTeamName}
+              value={teamName}
+            />
           </div>
         )}
       </Box>

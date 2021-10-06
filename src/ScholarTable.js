@@ -19,6 +19,7 @@ import Tooltip from "@mui/material/Tooltip";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Switch from "@mui/material/Switch";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
 import { visuallyHidden } from "@mui/utils";
 
 let rows = [];
@@ -158,8 +159,15 @@ EnhancedTableHead.propTypes = {
 };
 
 const EnhancedTableToolbar = (props) => {
-  const { numSelected, teamName, delScholar, selected, readonly, setSelected } =
-    props;
+  const {
+    numSelected,
+    teamName,
+    delScholar,
+    selected,
+    readonly,
+    setSelected,
+    setOpenTM,
+  } = props;
 
   return (
     <Toolbar
@@ -185,14 +193,21 @@ const EnhancedTableToolbar = (props) => {
           {numSelected} selected
         </Typography>
       ) : (
-        <Typography
-          sx={{ flex: "1 1 100%" }}
-          variant="h5"
-          id="tableTitle"
-          component="div"
-        >
-          Scholar Leaderboard for {teamName}
-        </Typography>
+        <>
+          <Typography
+            sx={{ flex: "1 1 100%" }}
+            variant="h5"
+            id="tableTitle"
+            component="div"
+          >
+            Scholar Leaderboard for {teamName}
+            {!readonly && (
+              <IconButton sx={{ ml: 1 }} onClick={() => setOpenTM(true)}>
+                <EditIcon fontSize="small" sx={{ color: "darkgrey" }} />
+              </IconButton>
+            )}
+          </Typography>
+        </>
       )}
 
       {numSelected > 0 && !readonly ? (
@@ -222,6 +237,7 @@ export default function ScholarTable({
   teamName,
   delScholar,
   readonly,
+  setOpenTM,
 }) {
   const [order, setOrder] = React.useState("desc");
   const [orderBy, setOrderBy] = React.useState("avgslp");
@@ -295,6 +311,7 @@ export default function ScholarTable({
           selected={selected}
           setSelected={setSelected}
           readonly={readonly}
+          setOpenTM={setOpenTM}
         />
         <TableContainer>
           <Table

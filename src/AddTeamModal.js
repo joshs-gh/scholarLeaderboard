@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import Modal from "@mui/material/Modal";
 import TextField from "@mui/material/TextField";
 
-function AddTeamModal({ user, openTM, setOpenTM, setTeamName }) {
+function AddTeamModal({ user, openTM, setOpenTM, setTeamName, value }) {
   const handleClose = () => {
     setOpenTM(false);
     setNameError(false);
@@ -65,6 +65,7 @@ function AddTeamModal({ user, openTM, setOpenTM, setTeamName }) {
             fullWidth
             inputRef={name}
             onChange={validateName}
+            defaultValue={value}
           />
           <Button
             variant="contained"
